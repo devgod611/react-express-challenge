@@ -1,0 +1,1 @@
+Run the web client with `yarn && yarn start`

@@ -1,0 +1,55 @@
+version: '3'
+services:
+  mysql:
+    image: "mysql:5.7.10"
+    ports:
+      - "33067:3306"
+    command: --init-file /data/app/init.sql
+    expose: 
+      - 3306
+    env_file: ./server/.env
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: ok
+      MYSQL_ROOT_USER: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 
+      MYSQL_DATABASE: testho
+      MYSQL_ROOT_HOST: '%'
+    restart: unless-stopped
+    networks:
+      - my-app
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./testho.sql:/data/app/init.sql
+  server:
+    image: api-server
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server:/usr/app
+      - /usr/app/node_modules
+    depends_on: 
+      - mysql
+    networks: 
+      - my-app
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST_IP: mysql
+  web:
+    image: react-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/usr/app
+      - /usr/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+volumes:
+  mysql-data:
+    driver: local
+networks:
+  my-app:
+    driver: bridge
+  
+
